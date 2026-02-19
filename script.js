@@ -1,176 +1,97 @@
-// ================================
-// AFRICAN NATURE - MAIN SCRIPT
-// ================================
-
-// Wait for DOM
 document.addEventListener("DOMContentLoaded", () => {
 
-    // =========================
-    // 1. Sticky Header Effect
-    // =========================
-    const header = document.querySelector("header");
+/* PRELOADER */
+window.addEventListener("load", () => {
+document.getElementById("preloader").style.display="none";
+});
 
-    window.addEventListener("scroll", () => {
-        if (window.scrollY > 50) {
-            header.style.background = "#000";
-            header.style.boxShadow = "0 5px 20px rgba(0,0,0,0.5)";
-        } else {
-            header.style.background = "#111";
-            header.style.boxShadow = "none";
-        }
-    });
+/* MOBILE MENU */
+const toggle=document.getElementById("menu-toggle");
+const nav=document.getElementById("nav-menu");
 
+toggle.addEventListener("click",()=>{
+nav.classList.toggle("active");
+});
 
-    // =========================
-    // 2. Smooth Scroll
-    // =========================
-    const links = document.querySelectorAll("nav a");
+/* AUDIO CONTROL */
+const audios=document.querySelectorAll("audio");
 
-    links.forEach(link => {
-        link.addEventListener("click", function (e) {
-            e.preventDefault();
-            const targetId = this.getAttribute("href");
-            const targetSection = document.querySelector(targetId);
-            targetSection.scrollIntoView({
-                behavior: "smooth"
-            });
-        });
-    });
+audios.forEach(audio=>{
+audio.addEventListener("play",()=>{
+audios.forEach(other=>{
+if(other!==audio) other.pause();
+});
+});
+});
 
+/* CART SYSTEM */
+let cart=[];
+const buyBtns=document.querySelectorAll(".buy-btn");
+const cartSidebar=document.getElementById("cart-sidebar");
+const cartItems=document.getElementById("cart-items");
+const cartTotal=document.getElementById("cart-total");
 
-    // =========================
-    // 3. Active Link Highlight
-    // =========================
-    const sections = document.querySelectorAll("section");
+buyBtns.forEach(btn=>{
+btn.addEventListener("click",()=>{
+const card=btn.parentElement;
+const name=card.querySelector("h3").innerText;
+const price=parseInt(card.querySelector(".price").innerText.replace("$",""));
 
-    window.addEventListener("scroll", () => {
-        let current = "";
+cart.push({name,price});
+updateCart();
+cartSidebar.classList.add("active");
+});
+});
 
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop - 150;
-            if (pageYOffset >= sectionTop) {
-                current = section.getAttribute("id");
-            }
-        });
+function updateCart(){
+cartItems.innerHTML="";
+let total=0;
 
-        links.forEach(link => {
-            link.classList.remove("active");
-            if (link.getAttribute("href") === "#" + current) {
-                link.classList.add("active");
-            }
-        });
-    });
+cart.forEach(item=>{
+const li=document.createElement("li");
+li.textContent=item.name+" - $"+item.price;
+cartItems.appendChild(li);
+total+=item.price;
+});
 
+cartTotal.textContent="Total: $"+total;
+}
 
-    // =========================
-    // 4. Audio Control (One at a time)
-    // =========================
-    const audios = document.querySelectorAll("audio");
+/* CHECKOUT */
+document.getElementById("checkout-btn").addEventListener("click",()=>{
+if(cart.length===0){
+alert("Cart is empty.");
+return;
+}
+alert("Checkout successful (Demo).");
+cart=[];
+updateCart();
+cartSidebar.classList.remove("active");
+});
 
-    audios.forEach(audio => {
-        audio.addEventListener("play", () => {
-            audios.forEach(otherAudio => {
-                if (otherAudio !== audio) {
-                    otherAudio.pause();
-                }
-            });
-        });
-    });
+/* CONTACT FORM */
+document.getElementById("contact-form").addEventListener("submit",(e)=>{
+e.preventDefault();
+alert("Message sent successfully.");
+e.target.reset();
+});
 
+/* BACK TO TOP */
+const back=document.getElementById("backToTop");
 
-    // =========================
-    // 5. Scroll Reveal Animation
-    // =========================
-    const cards = document.querySelectorAll(".card");
+window.addEventListener("scroll",()=>{
+if(window.scrollY>400){
+back.style.display="block";
+}else{
+back.style.display="none";
+}
+});
 
-    const revealOnScroll = () => {
-        const triggerBottom = window.innerHeight * 0.85;
+back.addEventListener("click",()=>{
+window.scrollTo({top:0,behavior:"smooth"});
+});
 
-        cards.forEach(card => {
-            const cardTop = card.getBoundingClientRect().top;
-
-            if (cardTop < triggerBottom) {
-                card.style.opacity = "1";
-                card.style.transform = "translateY(0)";
-            } else {
-                card.style.opacity = "0";
-                card.style.transform = "translateY(40px)";
-            }
-        });
-    };
-
-    cards.forEach(card => {
-        card.style.opacity = "0";
-        card.style.transition = "all 0.6s ease";
-    });
-
-    window.addEventListener("scroll", revealOnScroll);
-    revealOnScroll();
-
-
-    // =========================
-    // 6. Simple Beat Cart System
-    // =========================
-    let cart = JSON.parse(localStorage.getItem("africanNatureCart")) || [];
-
-    const buyButtons = document.querySelectorAll(".card .btn");
-
-    buyButtons.forEach(button => {
-        button.addEventListener("click", (e) => {
-            e.preventDefault();
-
-            const beatName = button.parentElement.querySelector("h3").innerText;
-            const price = button.parentElement.querySelector(".price").innerText;
-
-            const item = { beatName, price };
-
-            cart.push(item);
-            localStorage.setItem("africanNatureCart", JSON.stringify(cart));
-
-            alert(beatName + " added to cart!");
-        });
-    });
-
-
-    // =========================
-    // 7. Display Cart Count (Optional)
-    // =========================
-    const logo = document.querySelector("header h1");
-
-    const updateCartDisplay = () => {
-        if (cart.length > 0) {
-            logo.innerHTML = "African Nature 🛒(" + cart.length + ")";
-        } else {
-            logo.innerHTML = "African Nature";
-        }
-    };
-
-    updateCartDisplay();
-
-
-    // =========================
-    // 8. Form Validation Enhancement
-    // =========================
-    const form = document.querySelector("form");
-
-    if (form) {
-        form.addEventListener("submit", (e) => {
-            const email = form.querySelector("input[type='email']").value;
-
-            if (!email.includes("@")) {
-                e.preventDefault();
-                alert("Please enter a valid email address.");
-            }
-        });
-    }
-
-
-    // =========================
-    // 9. Dynamic Footer Year
-    // =========================
-    const footer = document.querySelector("footer");
-
-    const year = new Date().getFullYear();
-    footer.innerHTML = "© " + year + " African Nature | All Rights Reserved";
+/* YEAR */
+document.getElementById("year").textContent=new Date().getFullYear();
 
 });
